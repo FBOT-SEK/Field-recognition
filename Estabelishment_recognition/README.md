@@ -1,2 +1,2 @@
 ## Estabelishment_recognition
-Fazer o reconhecimento dos estabelecimentos
+Uma sketch do código para a orientação do robô. Ainda tem que fazer muitas alterações e comentarei melhor
