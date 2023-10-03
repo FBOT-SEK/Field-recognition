@@ -114,6 +114,7 @@ def encontrar_cor_mais_proxima(r, g, b, cores): # Encontra a cor mais próxima d
 
 def esquerda(): # Vira para a direita
     gyro.reset()  
+    
     while gyro.angle < 84:
         tank_drive.on(-5, 5)
         odometry.get_pos()
@@ -149,7 +150,7 @@ def increase_speed():
         time.sleep(0.3)  # Espere por 0.1 segundo
         
 
-
+#   -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 # Função de navegação até chegar no ponto 0
@@ -158,11 +159,11 @@ def init():
     print(CS1.rgb)
     print(CS2.rgb)
     print('')
+    
+    # Se os dois sensores estiverem lendo branco, anda para a frente
+    if cor_mais_proxima1 == branco.nome and cor_mais_proxima2 == branco2.nome: 
         
-    if cor_mais_proxima1 == branco.nome and cor_mais_proxima2 == branco2.nome: # Se os dois sensores estiverem lendo branco, anda para a frente
-
-    # Inicia uma thread para aumentar a velocidade gradativamente para que não haja derrapagem
-        threading.Thread(target=increase_speed).start()
+        threading.Thread(target=increase_speed).start() # Inicia uma thread para aumentar a velocidade gradativamente para que não haja derrapagem
         while speed < 10:
             tank_drive.on(SpeedPercent(speed), SpeedPercent(speed))
 
@@ -170,23 +171,39 @@ def init():
     # Se o sensor 1 leu azul e o sensor 2 leu branco, vire para a esquerda até alinhar os sensores e os dois lerem azul
     elif cor_mais_proxima1 == azul.nome and cor_mais_proxima2 == branco2.nome:
         tank_drive.off()
+        
         while cor_mais_proxima1 == azul.nome and cor_mais_proxima2 != azul2.nome:
+            r1,g1,b1 = CS1.rgb
+            cor_mais_proxima1 = encontrar_cor_mais_proxima(r1,g1,b1, cores1)
+
+            r2,g2,b2 = CS2.rgb
+            cor_mais_proxima2 = encontrar_cor_mais_proxima(r2,g2,b2, cores2)
+    
             tank_drive.on(-2,2)
+        
         if cor_mais_proxima1 == azul.nome and cor_mais_proxima2 == azul2.nome: # Se os dois leram azul, então chegou na zona de embarque
             return zona_de_embarque()
         
     # Se o sensor 1 leu azul e o sensor 2 leu branco, vire para a esquerda até alinhar os sensores e os dois lerem azul
     elif cor_mais_proxima1 == branco.nome and cor_mais_proxima2 == azul2.nome:
         tank_drive.off()
+        
         while cor_mais_proxima1 != azul.nome and cor_mais_proxima2 == azul2.nome: 
+            r1,g1,b1 = CS1.rgb
+            cor_mais_proxima1 = encontrar_cor_mais_proxima(r1,g1,b1, cores1)
+
+            r2,g2,b2 = CS2.rgb
+            cor_mais_proxima2 = encontrar_cor_mais_proxima(r2,g2,b2, cores2)
+    
             tank_drive.on(2.5,-2.5)
+        
         if cor_mais_proxima1 == azul.nome and cor_mais_proxima2 == azul2.nome: # Se os dois leram azul, então chegou na zona de embarque
             return zona_de_embarque()
 
     # Se os sensores 1 e 2 lerem preto, então ele está na parede de um estabelecimento
     elif cor_mais_proxima1 == preto.nome and cor_mais_proxima2 == preto2.nome: 
         tank_drive.off()
-        tank_drive.on_for_degrees(-10,-10, 5*andar) # Volto 5cm e viro a direita
+        tank_drive.on_for_degrees(-10,-10, 5*andar) # Volto 5cm e viro a direiata
         direita()
             
     # Se o sensor 1 leu preto e o sensor 2 leu amarelo, então está na entrada de um estabelecimento        
@@ -212,71 +229,85 @@ def init():
     # Se a última cor que os sensores leram for branco e a cor atual for azul, então chegou na zona de embarque
     if ultima_cor1 == branco.nome and cor_mais_proxima1 == azul.nome and ultima_cor2 == branco2.nome and cor_mais_proxima2 == azul2.nome: 
         print('entrou')
+        
         return zona_de_embarque()
         
 
 def zona_de_embarque(): # Entrou na zona de embarque
         print('Zona de embarque')
         tank_drive.off()
-        tank_drive.on_for_degrees(-10,-10, 6*andar) # Volta 6cm e vira a direita
+        tank_drive.on_for_degrees(-10,-10, 5*andar) # Volta 5cm e vira a direita
         direita()
         tank_drive.on(10, 10) # Ando até achar a delimitação vermelha
         
         if cor_mais_proxima1 == vermelho.nome and cor_mais_proxima2 == vermelho2.nome: # Se os dois sensores lerem vermelho, então chegou no ponto 0
             tank_drive.off()
-            tank_drive.on_for_degrees(-10,-10, 3*andar) # Volta 5cm e vira 180 graus
+            tank_drive.on_for_degrees(-10,-10, 5*andar) # Volta 5cm e vira 180 graus
             virar_180()
             tank_drive.off()
+            
             return embarque() # Começo o embarque
         
         
 # Procura um cano e assim que acha reconhece se é adulto ou criança
 def embarque():
+    
     while US > 15: # Enquanto o ultrassônico não detectar um cano anda pra frente
         tank_drive.on(20,20)
+    
     if US < 15: # Quando o ultrassônico detectar um cano vira a direita e anda 9cm para frente
         tank_drive.off()
         direita()
         tank_drive.on_for_degrees(2.5,2.5, 9*andar)
+        
         if IRS.proximity <= 10: # Se o infravermelho detectar algo, então é um adulto
             print('Adulto')
             return Adultos()
+        
         elif IRS.proximity >= 10: # Caso não detectar, é uma criança
             print('Crianca')
             return Criancas()
+        
         else:
             return
 
 # Reconhece o estabelecimento do adulto e retorna a função para o estabelecimento correspondente           
 def Adultos():
-    
         if cano_mais_proximo == vermelho3.nome: # Se vermelho é farmacia
             print('Farmacia')
             #return Drugstore()
+       
         if cano_mais_proximo == verde3.nome: # Se verde é prefeitura
             print("Prefeitura")
             #return City_hall()
+        
         if cano_mais_proximo == azul3.nome: # Se azul é museu
             print("Museu")
             #return Museum()
+        
         if cano_mais_proximo == marrom3.nome: # Se marrom é padaria
             print('Padaria')
             #return Bakery()
+        
         else:
             print('nao existe')
             return False
 
 # Reconhece o estabelecimento da criança e retorna a função para o estabelecimento correspondente           
 def Criancas():
+        
         if cano_mais_proximo == verde3.nome: # Se verde é parque
             print('Parque')
             #return Park()
+        
         if cano_mais_proximo == azul3.nome: # se azul é escola
             print('Escola')
             #return School()
+        
         if cano_mais_proximo == marrom3.nome: # Se marrom é biblioteca
             print('Biblioteca')
             #return Library()
+        
         else:
             print('nao existe')
             return False
