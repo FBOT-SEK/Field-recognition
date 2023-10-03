@@ -155,6 +155,15 @@ def increase_speed():
 
 # Função de navegação até chegar no ponto 0
 def init():
+    r1,g1,b1 = CS1.rgb
+    cor_mais_proxima1 = encontrar_cor_mais_proxima(r1,g1,b1, cores1)
+
+    r2,g2,b2 = CS2.rgb
+    cor_mais_proxima2 = encontrar_cor_mais_proxima(r2,g2,b2, cores2)
+    
+    r3,g3,b3 = cor_do_cone.rgb
+    cano_mais_proximo = encontrar_cor_mais_proxima(r3,g3,b3, cores3)
+    
     print(cor_mais_proxima1,'', cor_mais_proxima2) # Printa a leitura e os valores RGB dos sensores 1 e 2
     print(CS1.rgb)
     print(CS2.rgb)
